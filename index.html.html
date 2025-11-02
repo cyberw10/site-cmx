@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Consulta de Produtos CMX - Operadores de Caixa</title>
+
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'azul-escuro': '#0A1F44',
+            'vermelho-marca': '#E53935',
+            'amarelo-marca': '#FBC02D'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+    .product-image { transition: transform .18s ease; }
+    .product-card:hover .product-image { transform: translateY(-6px) scale(1.02); }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+
+  <!-- Top header -->
+  <header class="bg-white shadow sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
+            <!-- Logo CMX -->
+            <img src="image/logo-cmx.png" alt="CMX Logo" class="h-14 w-auto" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-azul-escuro text-white text-xl font-bold shadow" style="display: none;">
+              🛒
+            </div>
+            <div>
+              <h1 class="text-lg font-extrabold text-azul-escuro">Consulta de Produtos CMX</h1>
+              <p class="text-xs text-gray-500">Operadores de Caixa</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 max-w-2xl px-6">
+          <!-- Search + Category filter (top) -->
+          <div class="flex gap-3">
+            <div class="flex-1">
+              <label class="sr-only" for="search">Buscar produtos</label>
+              <div class="relative">
+                <input id="search" type="search" placeholder="🔍 Buscar por nome, código ou categoria..." 
+                       class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-azul-escuro focus:border-transparent" />
+                <button id="clearBtn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-md text-sm hidden">Limpar</button>
+              </div>
+            </div>
+
+            <div class="w-56">
+              <label class="sr-only" for="categorySelect">Categoria</label>
+              <select id="categorySelect" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-azul-escuro">
+                <option value="all">Todas as Categorias</option>
+                <option value="racoes">Rações</option>
+                <option value="peixes">Peixaria</option>
+                <option value="frutas">Frutas</option>
+                <option value="legumes">Legumes e Verduras</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+          <div class="text-sm text-gray-500">
+            <div>Total: <span id="totalProducts" class="font-semibold text-azul-escuro">0</span></div>
+            <div>Visíveis: <span id="visibleProducts" class="font-semibold text-azul-escuro">0</span></div>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <button id="refreshBtn" title="Recarregar lista" class="px-3 py-2 rounded-lg border border-gray-200 bg-white shadow hover:bg-gray-50">⟳</button>
+            <div class="flex items-center gap-2">
+              <img src="https://ui-avatars.com/api/?name=CMX&background=0A1F44&color=fff" class="w-9 h-9 rounded-full" alt="Usuário" />
+              <div class="text-sm">
+                <div class="font-semibold">Operadores De Caixa</div>
+                <div class="text-xs text-gray-400">Operador</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Quick filter chips -->
+    <div class="mb-6 flex flex-wrap gap-3">
+      <button data-cat="all" class="chip bg-azul-escuro text-white px-3 py-2 rounded-full text-sm font-semibold shadow">Todos</button>
+      <button data-cat="racoes" class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">Rações</button>
+      <button data-cat="peixes" class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">Peixaria</button>
+      <button data-cat="frutas" class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">Frutas</button>
+      <button data-cat="legumes" class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">Legumes</button>
+    </div>
+
+    <!-- Products grid -->
+    <section id="productsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></section>
+
+    <!-- No results -->
+    <div id="noResults" class="mt-8 bg-white border border-red-100 text-red-600 rounded-xl p-6 shadow text-center hidden">
+      <h3 class="text-lg font-bold">Nenhum produto encontrado</h3>
+      <p class="text-sm text-gray-500 mt-2">Tente outro termo ou remova filtros.</p>
+    </div>
+  </main>
+
+  <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <div class="bg-white rounded-xl shadow p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="font-bold text-azul-escuro text-lg">Compras Mix Atacarejo</div>
+          <div class="text-sm text-gray-500 mt-1">📍 Moreno, PE - 20 anos de história</div>
+        </div>
+        <div class="text-sm text-gray-600">Sistema de Consulta de Produtos - C2 Operador de Caixa</div>
+      </div>
+      <div class="border-t pt-4 mt-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+          <div>
+            <div class="font-semibold text-azul-escuro mb-1">C1 - Loja Centro</div>
+            <div>Rua Exemplo, 123 - Centro</div>
+            <div>Moreno - PE, CEP 54800-000</div>
+          </div>
+          <div>
+            <div class="font-semibold text-azul-escuro mb-1">C2 - Loja Principal</div>
+            <div>Av. Principal, 456 - Bairro Novo</div>
+            <div>Moreno - PE, CEP 54800-100</div>
+          </div>
+          <div>
+            <div class="font-semibold text-azul-escuro mb-1">C3 - Loja Norte</div>
+            <div>Rua do Comércio, 789 - Zona Norte</div>
+            <div>Moreno - PE, CEP 54800-200</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script: produtos + filtro + pesquisa -->
+  <script>
+    // ==========================================
+    // PRODUTOS - ADICIONE NOVOS PRODUTOS AQUI
+    // ==========================================
+    // Para adicionar produtos, copie o formato abaixo e adicione ao final do array:
+    // {"name":"Nome do Produto","code":"CÓDIGO","category":"categoria"},
+    // Categorias disponíveis: "racoes", "peixes", "frutas", "legumes"
+    // ==========================================
+    
+    const products = [
+      // RAÇÕES
+      {"name":"Friskies Mix de Carne","code":"0026","category":"racoes"},
+      {"name":"Pedigree Raças Pequenas Carne","code":"5250","category":"racoes"},
+      {"name":"Pedigree Raças Média e Grande Filhote","code":"1503","category":"racoes"},
+      {"name":"Nhoc Cães (Filhote)","code":"5265","category":"racoes"},
+      {"name":"Pedigree Carne ao Leite","code":"6213","category":"racoes"},
+      {"name":"Ração Dog Chow Extra Life","code":"4510","category":"racoes"},
+      {"name":"Ração Dog Chow Papita Extra Life","code":"6960","category":"racoes"},
+      {"name":"Ração Frango e Veg","code":"6960","category":"racoes"},
+      {"name":"Ração Cão Adulto NHAC Care","code":"5069","category":"racoes"},
+      {"name":"Ração K i Vet Carne e Pelixe","code":"1557","category":"racoes"},
+      {"name":"Ração Kanina (Filhote)","code":"10021","category":"racoes"},
+      {"name":"Ração Cães Vitamax 93","code":"9153","category":"racoes"},
+      {"name":"Ração Mar de Sabores","code":"3051","category":"racoes"},
+      {"name":"Whiskas Peixe","code":"2213","category":"racoes"},
+      {"name":"Ração Pedigree Carne e Vegetais","code":"1564","category":"racoes"},
+      {"name":"Ração para Gato","code":"1068","category":"racoes"},
+      {"name":"Ração Cão Adulto Frango e Veg","code":"6960","category":"racoes"},
+      {"name":"Ração Kanina (Filhote)","code":"10021","category":"racoes"},
+      {"name":"Pedigree Raça Grande Filhote","code":"1503","category":"racoes"},
+      {"name":"Ração K i Vet Carne e Pelixe","code":"1557","category":"racoes"},
+      {"name":"Ração Cão Adulto NHAC Care","code":"5069","category":"racoes"},
+      {"name":"Ração Mar de Sabores","code":"3051","category":"racoes"},
+      {"name":"Ração Cães Vitamax","code":"9153","category":"racoes"},
+      {"name":"Whiskas Peixe","code":"2213","category":"racoes"},
+      
+      // PEIXARIA
+      {"name":"Bacalhau Salgado KG","code":"8090","category":"peixes"},
+      {"name":"Peixe Anchova KG","code":"8101","category":"peixes"},
+      {"name":"Peixe Atum Albacora Posta KG","code":"8106","category":"peixes"},
+      {"name":"Peixe Castanha Eviscerada KG Tratada Congelada","code":"8094","category":"peixes"},
+      {"name":"Peixe Castanha Inteira Cong KG","code":"8127","category":"peixes"},
+      {"name":"Peixe Castanha Salgada","code":"8091","category":"peixes"},
+      {"name":"Peixe Cavalinha Inteira KG Congelada","code":"8092","category":"peixes"},
+      {"name":"Peixe Corvina em Pedaços KG","code":"970","category":"peixes"},
+      {"name":"Peixe Corvina Grande KG","code":"8108","category":"peixes"},
+      {"name":"Peixe Corvina Pequena KG","code":"8105","category":"peixes"},
+      {"name":"Peixe Corvina Posta KG","code":"8104","category":"peixes"},
+      {"name":"Peixe Dourado em Posta KG","code":"9126","category":"peixes"},
+      {"name":"Peixe Dourado em Pedaços KG","code":"8109","category":"peixes"},
+      {"name":"Peixe Filé de Merluza KG","code":"8112","category":"peixes"},
+      {"name":"Peixe Merluza Esvicerada KG Congelado","code":"8103","category":"peixes"},
+      {"name":"Peixe Aerelete Congelado KG","code":"1434","category":"peixes"},
+      {"name":"Peixe Palombeta KG","code":"3582","category":"peixes"},
+      {"name":"Peixe Pescada em Posta KG","code":"3324","category":"peixes"},
+      {"name":"Peixe Pescada Esvicerada KG Congelada","code":"8095","category":"peixes"},
+      {"name":"Peixe Piramutaba Posta C/Pele KG","code":"8121","category":"peixes"},
+      {"name":"Peixe Paloca Salgado Desfiado KG","code":"8418","category":"peixes"},
+      {"name":"Peixe Sardinha Inteira KG Congelada","code":"8093","category":"peixes"},
+      {"name":"Peixe Sardinha S/Cabeça KG Congelada","code":"221","category":"peixes"},
+      {"name":"Peixe Tainha Congelado KG Inteiro","code":"8124","category":"peixes"},
+      
+      // FRUTAS
+      {"name":"Abacate KG","code":"2001","category":"frutas"},
+      {"name":"Abacaxi UND","code":"2002","category":"frutas"},
+      {"name":"Ameixa Fresca Importada KG","code":"5108","category":"frutas"},
+      {"name":"Ameixa Fresca Nacional KG","code":"922","category":"frutas"},
+      {"name":"Ameixa Seca C/Caroço KG","code":"8097","category":"frutas"},
+      {"name":"Ameixa Seca S/Caroço KG","code":"8313","category":"frutas"},
+      {"name":"Banana Comprida KG","code":"2004","category":"frutas"},
+      {"name":"Banana Granaine KG","code":"2125","category":"frutas"},
+      {"name":"Banana Maçã KG","code":"2123","category":"frutas"},
+      {"name":"Banana Nanica KG","code":"750","category":"frutas"},
+      {"name":"Banana Prata KG","code":"2003","category":"frutas"},
+      {"name":"Banana Prata Promoção KG","code":"974","category":"frutas"},
+      {"name":"Caju KG","code":"2126","category":"frutas"},
+      {"name":"Caqui Importado KG","code":"5118","category":"frutas"},
+      {"name":"Goiaba KG","code":"2006","category":"frutas"},
+      {"name":"Graviola KG","code":"2111","category":"frutas"},
+      {"name":"Kiwi Gold KG","code":"5130","category":"frutas"},
+      {"name":"Kiwi Importado KG","code":"2055","category":"frutas"},
+      {"name":"Laranja Mimo KG","code":"2008","category":"frutas"},
+      {"name":"Laranja Murcote KG","code":"5126","category":"frutas"},
+      {"name":"Laranja Pera KG","code":"2007","category":"frutas"},
+      {"name":"Laranja PCT 1KG","code":"2110","category":"frutas"},
+      {"name":"Laranja Polan","code":"5104","category":"frutas"},
+      {"name":"Limão KG","code":"2010","category":"frutas"},
+      {"name":"Limão Siciliano KG","code":"9577","category":"frutas"},
+      {"name":"Maçã Argentina KG","code":"5131","category":"frutas"},
+      {"name":"Maçã Nacional KG","code":"2011","category":"frutas"},
+      {"name":"Maçã Verde KG","code":"2057","category":"frutas"},
+      {"name":"Mamão Formosa KG","code":"2015","category":"frutas"},
+      {"name":"Mamão Havai Gold KG","code":"2016","category":"frutas"},
+      {"name":"Manga Espada KG","code":"2121","category":"frutas"},
+      {"name":"Manga Rosa KG","code":"2120","category":"frutas"},
+      {"name":"Manga Tommy KG","code":"2012","category":"frutas"},
+      {"name":"Maracujá KG","code":"2013","category":"frutas"},
+      {"name":"Melacia Codama KG","code":"2437","category":"frutas"},
+      {"name":"Melância KG","code":"2014","category":"frutas"},
+      {"name":"Melancia UND","code":"3346","category":"frutas"},
+      {"name":"Melão Dino Melicia KG","code":"5148","category":"frutas"},
+      {"name":"Melão Espanhol KG","code":"2017","category":"frutas"},
+      {"name":"Melão Espanhol Redinha KG","code":"5147","category":"frutas"},
+      {"name":"Melão Galia KG","code":"8123","category":"frutas"},
+      {"name":"Melão Japonês KG","code":"2088","category":"frutas"},
+      {"name":"Melão Orange KG","code":"5121","category":"frutas"},
+      {"name":"Melão Português KG","code":"5122","category":"frutas"},
+      {"name":"Morango Premium 250G","code":"10580","category":"frutas"},
+      {"name":"Nectarina Nacional KG","code":"2054","category":"frutas"},
+      {"name":"Pêra Danju Importada KG","code":"8126","category":"frutas"},
+      {"name":"Pêra Portuguesa KG","code":"2056","category":"frutas"},
+      {"name":"Pêssego Importado KG","code":"2059","category":"frutas"},
+      {"name":"Pêssego Nacional KG","code":"5142","category":"frutas"},
+      {"name":"Pinha KG","code":"2113","category":"frutas"},
+      {"name":"Pitaya KG","code":"921","category":"frutas"},
+      {"name":"Sapoti KG","code":"5145","category":"frutas"},
+      {"name":"Tangerina Importada KG","code":"5129","category":"frutas"},
+      {"name":"Tangerina Nacional KG","code":"1601","category":"frutas"},
+      {"name":"Tangerina Verde KG","code":"2024","category":"frutas"},
+      {"name":"Uva Benitaka Verão KG","code":"5125","category":"frutas"},
+      {"name":"Uva Crimison KG","code":"5141","category":"frutas"},
+      {"name":"Uva Itália Verde KG","code":"2022","category":"frutas"},
+      {"name":"Uva Nubia KG","code":"5110","category":"frutas"},
+      {"name":"Uva Passas KG","code":"8100","category":"frutas"},
+      {"name":"Uva Preta KG","code":"2021","category":"frutas"},
+      {"name":"Uva Roxa KG","code":"2112","category":"frutas"},
+      {"name":"Uva Vitória S/Semente KG","code":"1687","category":"frutas"},
+      
+      // LEGUMES E VERDURAS
+      {"name":"Abóbora Jacarezinho KG","code":"5132","category":"legumes"},
+      {"name":"Abóbora Japonesa KG","code":"5150","category":"legumes"},
+      {"name":"Abóbora Moranga KG","code":"8143","category":"legumes"},
+      {"name":"Abobrinha KG","code":"5112","category":"legumes"},
+      {"name":"Acelga KG","code":"2060","category":"legumes"},
+      {"name":"Alecrim UND","code":"2144","category":"legumes"},
+      {"name":"Alface Manteiga UND","code":"2093","category":"legumes"},
+      {"name":"Alho KG","code":"2051","category":"legumes"},
+      {"name":"Batata Doce Americana KG","code":"2064","category":"legumes"},
+      {"name":"Batata Inglesa KG","code":"2063","category":"legumes"},
+      {"name":"Batata Vinagrete KG","code":"1731","category":"legumes"},
+      {"name":"Berinjela KG","code":"2065","category":"legumes"},
+      {"name":"Beterraba KG","code":"2066","category":"legumes"},
+      {"name":"Bredo UND","code":"2109","category":"legumes"},
+      {"name":"Brocolis Ninja KG","code":"5124","category":"legumes"},
+      {"name":"Cará de Tomé KG","code":"2073","category":"legumes"},
+      {"name":"Cebola Branca KG","code":"2067","category":"legumes"},
+      {"name":"Cebola Roxa KG","code":"5119","category":"legumes"},
+      {"name":"Cebolinha UND","code":"5136","category":"legumes"},
+      {"name":"Cenoura KG","code":"2069","category":"legumes"},
+      {"name":"Chuchu KG","code":"2070","category":"legumes"},
+      {"name":"Coentro UND","code":"2071","category":"legumes"},
+      {"name":"Coco Seco UND","code":"2005","category":"legumes"},
+      {"name":"Coco Verde UND","code":"2023","category":"legumes"},
+      {"name":"Couve Flor KG","code":"2072","category":"legumes"},
+      {"name":"Couve Folha UND","code":"8139","category":"legumes"},
+      {"name":"Espinafre KG","code":"450","category":"legumes"},
+      {"name":"Feijão Verde KG","code":"5102","category":"legumes"},
+      {"name":"Frutas Cristalizadas KG","code":"8300","category":"legumes"},
+      {"name":"Gengibre KG","code":"2105","category":"legumes"},
+      {"name":"Hortelã UND","code":"2092","category":"legumes"},
+      {"name":"Jerimum KG","code":"2075","category":"legumes"},
+      {"name":"Jiló KG","code":"2128","category":"legumes"},
+      {"name":"Macaxeira KG","code":"2076","category":"legumes"},
+      {"name":"Manjericão UND","code":"5127","category":"legumes"},
+      {"name":"Maxixe KG","code":"2077","category":"legumes"},
+      {"name":"Pepino Comum KG","code":"2078","category":"legumes"},
+      {"name":"Pepino Japonês KG","code":"1441","category":"legumes"},
+      {"name":"Pimenta Biquinho KG","code":"2077","category":"legumes"},
+      {"name":"Pimenta de Cheiro KG","code":"5113","category":"legumes"},
+      {"name":"Pimenta Dedo de Moça KG","code":"5114","category":"legumes"},
+      {"name":"Pimentão Amarelo KG","code":"5134","category":"legumes"},
+      {"name":"Pimentão Verde KG","code":"2079","category":"legumes"},
+      {"name":"Pimentão Vermelho KG","code":"5135","category":"legumes"},
+      {"name":"Quiabo KG","code":"2080","category":"legumes"},
+      {"name":"Rabanete UND","code":"2131","category":"legumes"},
+      {"name":"Repolho Roxo KG","code":"2119","category":"legumes"},
+      {"name":"Repolho Verde KG","code":"2081","category":"legumes"},
+      {"name":"Rucula UND","code":"2089","category":"legumes"},
+      {"name":"Salsa UND","code":"2122","category":"legumes"},
+      {"name":"Tomate KG","code":"2074","category":"legumes"},
+      {"name":"Vagem KG","code":"2083","category":"legumes"},
+      {"name":"Vagem Macarrão KG","code":"5115","category":"legumes"}
+    ];
+
+    // Mapeamentos
+    const categoryNames = {
+      'racoes': 'Rações',
+      'peixes': 'Peixaria',
+      'frutas': 'Frutas',
+      'legumes': 'Legumes e Verduras'
+    };
+    const categoryIcons = {
+      'racoes': '🐕',
+      'peixes': '🐟',
+      'frutas': '🍎',
+      'legumes': '🥬'
+    };
+
+    // Estado
+    let currentCategory = 'all';
+    const $productsContainer = document.getElementById('productsContainer');
+    const $search = document.getElementById('search');
+    const $categorySelect = document.getElementById('categorySelect');
+    const $totalProducts = document.getElementById('totalProducts');
+    const $visibleProducts = document.getElementById('visibleProducts');
+    const $noResults = document.getElementById('noResults');
+    const $chips = document.querySelectorAll('.chip');
+    const $clearBtn = document.getElementById('clearBtn');
+    const $refreshBtn = document.getElementById('refreshBtn');
+
+    // Inicializa contadores
+    $totalProducts.textContent = products.length;
+    $visibleProducts.textContent = products.length;
+
+    // Render card de produto - SUPORTA MÚLTIPLAS EXTENSÕES DE IMAGEM
+    function createProductCard(product) {
+      const card = document.createElement('article');
+      card.className = 'product-card bg-white rounded-2xl shadow p-4 border border-gray-100 hover:shadow-lg transition';
+
+      const imgWrap = document.createElement('div');
+      imgWrap.className = 'w-full h-40 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden mb-3';
+
+      const img = document.createElement('img');
+      img.className = 'product-image object-contain max-h-full';
+      
+      // TENTA CARREGAR IMAGEM COM DIFERENTES EXTENSÕES
+      const imageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+      let currentExtIndex = 0;
+      
+      function tryLoadImage() {
+        if (currentExtIndex < imageExtensions.length) {
+          img.src = `image/${product.code}.${imageExtensions[currentExtIndex]}`;
+        } else {
+          // Se todas as extensões falharam, mostra o ícone
+          img.style.display = 'none';
+          iconDiv.style.display = 'flex';
+        }
+      }
+      
+      tryLoadImage();
+      
+      img.alt = product.name;
+      img.loading = 'lazy';
+
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'w-full h-full flex items-center justify-center text-5xl';
+      iconDiv.textContent = categoryIcons[product.category] || '📦';
+      iconDiv.style.display = 'none';
+
+      img.addEventListener('error', () => {
+        currentExtIndex++;
+        tryLoadImage();
+      });
+
+      imgWrap.appendChild(img);
+      imgWrap.appendChild(iconDiv);
+
+      const nameEl = document.createElement('h3');
+      nameEl.className = 'text-sm font-extrabold text-azul-escuro mb-1 leading-tight';
+      nameEl.textContent = product.name;
+
+      const codeEl = document.createElement('div');
+      codeEl.className = 'inline-block px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-vermelho-marca to-azul-escuro text-white';
+      codeEl.textContent = `COD: ${product.code}`;
+
+      const catEl = document.createElement('div');
+      catEl.className = 'mt-3 text-xs text-gray-500 flex items-center gap-2';
+      const catBadge = document.createElement('span');
+      catBadge.className = 'inline-flex items-center gap-2 px-2 py-1 rounded-md border text-xs';
+      catBadge.style.borderColor = 'rgba(10,31,68,0.08)';
+      catBadge.innerHTML = `${categoryIcons[product.category] || ''} <strong class="ml-0.5">${categoryNames[product.category] || product.category}</strong>`;
+
+      catEl.appendChild(catBadge);
+
+      card.appendChild(imgWrap);
+      card.appendChild(nameEl);
+      card.appendChild(codeEl);
+      card.appendChild(catEl);
+
+      return card;
+    }
+
+    function renderList(list) {
+      $productsContainer.innerHTML = '';
+      if (!list.length) {
+        $noResults.classList.remove('hidden');
+        $visibleProducts.textContent = '0';
+        return;
+      }
+      $noResults.classList.add('hidden');
+
+      const fragment = document.createDocumentFragment();
+      list.forEach(p => fragment.appendChild(createProductCard(p)));
+      $productsContainer.appendChild(fragment);
+
+      $visibleProducts.textContent = list.length;
+    }
+
+    function filterProducts() {
+      const term = $search.value.toLowerCase().trim();
+      const categoryFilter = currentCategory;
+      let base = products;
+
+      if (categoryFilter !== 'all') {
+        base = base.filter(p => p.category === categoryFilter);
+      }
+
+      if (!term) {
+        renderList(base);
+        return;
+      }
+
+      const filtered = base.filter(product => {
+        const name = product.name.toLowerCase();
+        const code = product.code.toLowerCase();
+        const catName = (categoryNames[product.category] || product.category).toLowerCase();
+
+        return name.includes(term) || code.includes(term) || catName.includes(term);
+      });
+
+      renderList(filtered);
+    }
+
+    // Handlers UI
+    $search.addEventListener('input', () => {
+      filterProducts();
+      $clearBtn.classList.toggle('hidden', !$search.value);
+    });
+
+    $search.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') filterProducts();
+    });
+
+    $categorySelect.addEventListener('change', (e) => {
+      currentCategory = e.target.value;
+      document.querySelectorAll('.chip').forEach(c => {
+        c.classList.remove('bg-azul-escuro', 'text-white', 'border-none');
+        c.classList.add('bg-white', 'text-azul-escuro', 'border', 'border-azul-escuro');
+        if (c.dataset.cat === currentCategory) {
+          c.classList.remove('bg-white','text-azul-escuro');
+          c.classList.add('bg-azul-escuro','text-white');
+          c.classList.remove('border');
+        }
+      });
+      filterProducts();
+    });
+
+    $chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const cat = chip.dataset.cat;
+        currentCategory = cat;
+        $categorySelect.value = cat;
+        $categorySelect.dispatchEvent(new Event('change'));
+      });
+    });
+
+    $clearBtn.addEventListener('click', () => {
+      $search.value = '';
+      $clearBtn.classList.add('hidden');
+      filterProducts();
+      $search.focus();
+    });
+
+    $refreshBtn.addEventListener('click', () => {
+      $search.value = '';
+      $categorySelect.value = 'all';
+      currentCategory = 'all';
+      $clearBtn.classList.add('hidden');
+      document.querySelectorAll('.chip').forEach(c => {
+        c.classList.remove('bg-azul-escuro','text-white');
+        c.classList.add('bg-white','text-azul-escuro','border','border-azul-escuro');
+      });
+      document.querySelector('.chip[data-cat="all"]').classList.add('bg-azul-escuro','text-white');
+      filterProducts();
+    });
+
+    // ======================================================
+    // FUNCIONALIDADE: ALT+TAB FOCA NA BARRA DE PESQUISA
+    // ======================================================
+    window.addEventListener('focus', () => {
+      setTimeout(() => {
+        $search.focus();
+      }, 100);
+    });
+
+    // Também foca ao pressionar Alt+Tab (detecta quando a janela recebe foco)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        setTimeout(() => {
+          $search.focus();
+        }, 100);
+      }
+    });
+
+    // inicializa
+    (function init() {
+      document.querySelector('.chip[data-cat="all"]').classList.remove('bg-white','text-azul-escuro');
+      document.querySelector('.chip[data-cat="all"]').classList.add('bg-azul-escuro','text-white');
+
+      renderList(products);
+
+      $search.focus();
+    })();
+  </script>
+</body>
+</html>

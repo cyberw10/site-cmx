@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Consulta de Produtos CMX - Operadores de Caixa</title>
 
-  <!-- Tailwind via CDN -->
+  <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -22,24 +22,42 @@
   </script>
 
   <style>
-    body { -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
-    .product-image { transition: transform .18s ease; }
-    .product-card:hover .product-image { transform: translateY(-6px) scale(1.02); }
+    body { 
+      -webkit-font-smoothing: antialiased; 
+      -moz-osx-font-smoothing: grayscale; 
+    }
+    .product-image { 
+      transition: transform .18s ease; 
+    }
+    .product-card:hover .product-image { 
+      transform: translateY(-6px) scale(1.02); 
+    }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-800">
 
-  <!-- Top header -->
+  <!-- ========================================== -->
+  <!-- CABEÇALHO SUPERIOR                         -->
+  <!-- ========================================== -->
   <header class="bg-white shadow sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
+        
+        <!-- LOGO E TÍTULO -->
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-3">
-            <!-- Logo CMX -->
-            <img src="image/logo-cmx.png" alt="CMX Logo" class="h-14 w-auto" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-azul-escuro text-white text-xl font-bold shadow" style="display: none;">
+            <!-- Logo CMX - carrega de: image/logo-cmx.png -->
+            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69029de996f1cf41afbe1c90/4859411fa_2069png.png" 
+                 alt="CMX Logo" 
+                 class="h-16 w-auto" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            
+            <!-- Fallback caso logo não carregue -->
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-azul-escuro text-white text-xl font-bold shadow" 
+                 style="display: none;">
               🛒
             </div>
+            
             <div>
               <h1 class="text-lg font-extrabold text-azul-escuro">Consulta de Produtos CMX</h1>
               <p class="text-xs text-gray-500">Operadores de Caixa</p>
@@ -47,21 +65,29 @@
           </div>
         </div>
 
+        <!-- BUSCA E FILTROS -->
         <div class="flex-1 max-w-2xl px-6">
-          <!-- Search + Category filter (top) -->
           <div class="flex gap-3">
+            <!-- Campo de busca -->
             <div class="flex-1">
               <label class="sr-only" for="search">Buscar produtos</label>
               <div class="relative">
-                <input id="search" type="search" placeholder="🔍 Buscar por nome, código ou categoria..." 
+                <input id="search" 
+                       type="search" 
+                       placeholder="🔍 Buscar por nome, código ou categoria..." 
                        class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-azul-escuro focus:border-transparent" />
-                <button id="clearBtn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-md text-sm hidden">Limpar</button>
+                <button id="clearBtn" 
+                        class="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-md text-sm hidden">
+                  Limpar
+                </button>
               </div>
             </div>
 
+            <!-- Filtro por categoria -->
             <div class="w-56">
               <label class="sr-only" for="categorySelect">Categoria</label>
-              <select id="categorySelect" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-azul-escuro">
+              <select id="categorySelect" 
+                      class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-azul-escuro">
                 <option value="all">Todas as Categorias</option>
                 <option value="racoes">Rações</option>
                 <option value="peixes">Peixaria</option>
@@ -72,19 +98,30 @@
           </div>
         </div>
 
+        <!-- CONTADORES E USUÁRIO -->
         <div class="flex items-center gap-6">
+          <!-- Contadores de produtos -->
           <div class="text-sm text-gray-500">
             <div>Total: <span id="totalProducts" class="font-semibold text-azul-escuro">0</span></div>
             <div>Visíveis: <span id="visibleProducts" class="font-semibold text-azul-escuro">0</span></div>
           </div>
 
+          <!-- Botões de ação -->
           <div class="flex items-center space-x-3">
-            <button id="refreshBtn" title="Recarregar lista" class="px-3 py-2 rounded-lg border border-gray-200 bg-white shadow hover:bg-gray-50">⟳</button>
+            <button id="refreshBtn" 
+                    title="Recarregar lista" 
+                    class="px-3 py-2 rounded-lg border border-gray-200 bg-white shadow hover:bg-gray-50">
+              ⟳
+            </button>
+            
+            <!-- Info do usuário -->
             <div class="flex items-center gap-2">
-              <img src="https://ui-avatars.com/api/?name=CMX&background=0A1F44&color=fff" class="w-9 h-9 rounded-full" alt="Usuário" />
+              <img src="https://ui-avatars.com/api/?name=CMX&background=0A1F44&color=fff" 
+                   class="w-9 h-9 rounded-full" 
+                   alt="Usuário" />
               <div class="text-sm">
-                <div class="font-semibold">Operadores De Caixa</div>
-                <div class="text-xs text-gray-400">Operador</div>
+                <div class="font-semibold">Operador de Caixa</div>
+                <div class="text-xs text-gray-400">CMX</div>
               </div>
             </div>
           </div>
@@ -94,27 +131,52 @@
     </div>
   </header>
 
-  <!-- Main content -->
+  <!-- ========================================== -->
+  <!-- CONTEÚDO PRINCIPAL                         -->
+  <!-- ========================================== -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Quick filter chips -->
+    
+    <!-- Filtros rápidos por categoria (chips) -->
     <div class="mb-6 flex flex-wrap gap-3">
-      <button data-cat="all" class="chip bg-azul-escuro text-white px-3 py-2 rounded-full text-sm font-semibold shadow">Todos</button>
-      <button data-cat="racoes" class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">Rações</button>
-      <button data-cat="peixes" class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">Peixaria</button>
-      <button data-cat="frutas" class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">Frutas</button>
-      <button data-cat="legumes" class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">Legumes</button>
+      <button data-cat="all" 
+              class="chip bg-azul-escuro text-white px-3 py-2 rounded-full text-sm font-semibold shadow">
+        Todos
+      </button>
+      <button data-cat="racoes" 
+              class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">
+        Rações
+      </button>
+      <button data-cat="peixes" 
+              class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">
+        Peixaria
+      </button>
+      <button data-cat="frutas" 
+              class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">
+        Frutas
+      </button>
+      <button data-cat="legumes" 
+              class="chip bg-white text-azul-escuro border border-azul-escuro px-3 py-2 rounded-full text-sm font-semibold">
+        Legumes
+      </button>
     </div>
 
-    <!-- Products grid -->
-    <section id="productsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></section>
+    <!-- Grade de produtos (será preenchida pelo JavaScript) -->
+    <section id="productsContainer" 
+             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    </section>
 
-    <!-- No results -->
-    <div id="noResults" class="mt-8 bg-white border border-red-100 text-red-600 rounded-xl p-6 shadow text-center hidden">
+    <!-- Mensagem quando não há resultados -->
+    <div id="noResults" 
+         class="mt-8 bg-white border border-red-100 text-red-600 rounded-xl p-6 shadow text-center hidden">
       <h3 class="text-lg font-bold">Nenhum produto encontrado</h3>
       <p class="text-sm text-gray-500 mt-2">Tente outro termo ou remova filtros.</p>
     </div>
+    
   </main>
 
+  <!-- ========================================== -->
+  <!-- RODAPÉ                                     -->
+  <!-- ========================================== -->
   <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
     <div class="bg-white rounded-xl shadow p-6">
       <div class="flex items-center justify-between mb-4">
@@ -122,8 +184,10 @@
           <div class="font-bold text-azul-escuro text-lg">Compras Mix Atacarejo</div>
           <div class="text-sm text-gray-500 mt-1">📍 Moreno, PE - 20 anos de história</div>
         </div>
-        <div class="text-sm text-gray-600">Sistema de Consulta de Produtos - C2 Operador de Caixa</div>
+        <div class="text-sm text-gray-600">Sistema de Consulta de Produtos - Operador de Caixa</div>
       </div>
+      
+      <!-- Endereços das lojas -->
       <div class="border-t pt-4 mt-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
           <div>
@@ -146,14 +210,18 @@
     </div>
   </footer>
 
-  <!-- Script: produtos + filtro + pesquisa -->
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT - LÓGICA DO SISTEMA             -->
+  <!-- ========================================== -->
   <script>
     // ==========================================
-    // PRODUTOS - ADICIONE NOVOS PRODUTOS AQUI
+    // ✏️ ADICIONE NOVOS PRODUTOS AQUI
     // ==========================================
-    // Para adicionar produtos, copie o formato abaixo e adicione ao final do array:
-    // {"name":"Nome do Produto","code":"CÓDIGO","category":"categoria"},
+    // Formato: {"name":"Nome do Produto","code":"CÓDIGO","category":"categoria"}
     // Categorias disponíveis: "racoes", "peixes", "frutas", "legumes"
+    // 
+    // IMPORTANTE: O código do produto deve corresponder ao nome do arquivo de imagem
+    // Exemplo: Cenoura tem code "2069", então a foto deve ser: image/2069.png (ou .jpg, .jpeg)
     // ==========================================
     
     const products = [
@@ -165,7 +233,6 @@
       {"name":"Pedigree Carne ao Leite","code":"6213","category":"racoes"},
       {"name":"Ração Dog Chow Extra Life","code":"4510","category":"racoes"},
       {"name":"Ração Dog Chow Papita Extra Life","code":"6960","category":"racoes"},
-      {"name":"Ração Frango e Veg","code":"6960","category":"racoes"},
       {"name":"Ração Cão Adulto NHAC Care","code":"5069","category":"racoes"},
       {"name":"Ração K i Vet Carne e Pelixe","code":"1557","category":"racoes"},
       {"name":"Ração Kanina (Filhote)","code":"10021","category":"racoes"},
@@ -174,23 +241,15 @@
       {"name":"Whiskas Peixe","code":"2213","category":"racoes"},
       {"name":"Ração Pedigree Carne e Vegetais","code":"1564","category":"racoes"},
       {"name":"Ração para Gato","code":"1068","category":"racoes"},
-      {"name":"Ração Cão Adulto Frango e Veg","code":"6960","category":"racoes"},
-      {"name":"Ração Kanina (Filhote)","code":"10021","category":"racoes"},
-      {"name":"Pedigree Raça Grande Filhote","code":"1503","category":"racoes"},
-      {"name":"Ração K i Vet Carne e Pelixe","code":"1557","category":"racoes"},
-      {"name":"Ração Cão Adulto NHAC Care","code":"5069","category":"racoes"},
-      {"name":"Ração Mar de Sabores","code":"3051","category":"racoes"},
-      {"name":"Ração Cães Vitamax","code":"9153","category":"racoes"},
-      {"name":"Whiskas Peixe","code":"2213","category":"racoes"},
       
       // PEIXARIA
       {"name":"Bacalhau Salgado KG","code":"8090","category":"peixes"},
       {"name":"Peixe Anchova KG","code":"8101","category":"peixes"},
       {"name":"Peixe Atum Albacora Posta KG","code":"8106","category":"peixes"},
-      {"name":"Peixe Castanha Eviscerada KG Tratada Congelada","code":"8094","category":"peixes"},
+      {"name":"Peixe Castanha Eviscerada KG","code":"8094","category":"peixes"},
       {"name":"Peixe Castanha Inteira Cong KG","code":"8127","category":"peixes"},
       {"name":"Peixe Castanha Salgada","code":"8091","category":"peixes"},
-      {"name":"Peixe Cavalinha Inteira KG Congelada","code":"8092","category":"peixes"},
+      {"name":"Peixe Cavalinha Inteira KG","code":"8092","category":"peixes"},
       {"name":"Peixe Corvina em Pedaços KG","code":"970","category":"peixes"},
       {"name":"Peixe Corvina Grande KG","code":"8108","category":"peixes"},
       {"name":"Peixe Corvina Pequena KG","code":"8105","category":"peixes"},
@@ -198,16 +257,16 @@
       {"name":"Peixe Dourado em Posta KG","code":"9126","category":"peixes"},
       {"name":"Peixe Dourado em Pedaços KG","code":"8109","category":"peixes"},
       {"name":"Peixe Filé de Merluza KG","code":"8112","category":"peixes"},
-      {"name":"Peixe Merluza Esvicerada KG Congelado","code":"8103","category":"peixes"},
+      {"name":"Peixe Merluza Esvicerada KG","code":"8103","category":"peixes"},
       {"name":"Peixe Aerelete Congelado KG","code":"1434","category":"peixes"},
       {"name":"Peixe Palombeta KG","code":"3582","category":"peixes"},
       {"name":"Peixe Pescada em Posta KG","code":"3324","category":"peixes"},
-      {"name":"Peixe Pescada Esvicerada KG Congelada","code":"8095","category":"peixes"},
+      {"name":"Peixe Pescada Esvicerada KG","code":"8095","category":"peixes"},
       {"name":"Peixe Piramutaba Posta C/Pele KG","code":"8121","category":"peixes"},
       {"name":"Peixe Paloca Salgado Desfiado KG","code":"8418","category":"peixes"},
-      {"name":"Peixe Sardinha Inteira KG Congelada","code":"8093","category":"peixes"},
-      {"name":"Peixe Sardinha S/Cabeça KG Congelada","code":"221","category":"peixes"},
-      {"name":"Peixe Tainha Congelado KG Inteiro","code":"8124","category":"peixes"},
+      {"name":"Peixe Sardinha Inteira KG","code":"8093","category":"peixes"},
+      {"name":"Peixe Sardinha S/Cabeça KG","code":"221","category":"peixes"},
+      {"name":"Peixe Tainha Congelado KG","code":"8124","category":"peixes"},
       
       // FRUTAS
       {"name":"Abacate KG","code":"2001","category":"frutas"},
@@ -331,13 +390,17 @@
       {"name":"Vagem Macarrão KG","code":"5115","category":"legumes"}
     ];
 
-    // Mapeamentos
+    // ==========================================
+    // CONFIGURAÇÕES E MAPEAMENTOS
+    // ==========================================
+    
     const categoryNames = {
       'racoes': 'Rações',
       'peixes': 'Peixaria',
       'frutas': 'Frutas',
       'legumes': 'Legumes e Verduras'
     };
+    
     const categoryIcons = {
       'racoes': '🐕',
       'peixes': '🐟',
@@ -345,7 +408,10 @@
       'legumes': '🥬'
     };
 
-    // Estado
+    // ==========================================
+    // ELEMENTOS DO DOM
+    // ==========================================
+    
     let currentCategory = 'all';
     const $productsContainer = document.getElementById('productsContainer');
     const $search = document.getElementById('search');
@@ -361,57 +427,67 @@
     $totalProducts.textContent = products.length;
     $visibleProducts.textContent = products.length;
 
-    // Render card de produto - SUPORTA MÚLTIPLAS EXTENSÕES DE IMAGEM
+    // ==========================================
+    // FUNÇÕES PRINCIPAIS
+    // ==========================================
+
+    /**
+     * Cria um card de produto individual
+     * Tenta carregar a imagem do produto da pasta 'image/'
+     * Se não encontrar, mostra o ícone da categoria
+     */
     function createProductCard(product) {
       const card = document.createElement('article');
       card.className = 'product-card bg-white rounded-2xl shadow p-4 border border-gray-100 hover:shadow-lg transition';
 
+      // Container da imagem
       const imgWrap = document.createElement('div');
       imgWrap.className = 'w-full h-40 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden mb-3';
 
+      // Elemento da imagem
       const img = document.createElement('img');
       img.className = 'product-image object-contain max-h-full';
-      
-      // TENTA CARREGAR IMAGEM COM DIFERENTES EXTENSÕES
-      const imageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-      let currentExtIndex = 0;
-      
-      function tryLoadImage() {
-        if (currentExtIndex < imageExtensions.length) {
-          img.src = `image/${product.code}.${imageExtensions[currentExtIndex]}`;
-        } else {
-          // Se todas as extensões falharam, mostra o ícone
-          img.style.display = 'none';
-          iconDiv.style.display = 'flex';
-        }
-      }
-      
-      tryLoadImage();
-      
+      img.src = `image/${product.code}.png`;  // Tenta carregar .png primeiro
       img.alt = product.name;
       img.loading = 'lazy';
 
+      // Ícone de fallback (caso a imagem não carregue)
       const iconDiv = document.createElement('div');
       iconDiv.className = 'w-full h-full flex items-center justify-center text-5xl';
       iconDiv.textContent = categoryIcons[product.category] || '📦';
       iconDiv.style.display = 'none';
 
-      img.addEventListener('error', () => {
-        currentExtIndex++;
-        tryLoadImage();
+      // Se a imagem falhar, tenta outras extensões e depois mostra ícone
+      img.addEventListener('error', function() {
+        // Tenta .jpg se .png falhou
+        if (img.src.endsWith('.png')) {
+          img.src = `image/${product.code}.jpg`;
+        } 
+        // Tenta .jpeg se .jpg falhou
+        else if (img.src.endsWith('.jpg')) {
+          img.src = `image/${product.code}.jpeg`;
+        } 
+        // Se todas falharam, mostra ícone
+        else {
+          img.style.display = 'none';
+          iconDiv.style.display = 'flex';
+        }
       });
 
       imgWrap.appendChild(img);
       imgWrap.appendChild(iconDiv);
 
+      // Nome do produto
       const nameEl = document.createElement('h3');
       nameEl.className = 'text-sm font-extrabold text-azul-escuro mb-1 leading-tight';
       nameEl.textContent = product.name;
 
+      // Código do produto
       const codeEl = document.createElement('div');
       codeEl.className = 'inline-block px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-vermelho-marca to-azul-escuro text-white';
       codeEl.textContent = `COD: ${product.code}`;
 
+      // Badge de categoria
       const catEl = document.createElement('div');
       catEl.className = 'mt-3 text-xs text-gray-500 flex items-center gap-2';
       const catBadge = document.createElement('span');
@@ -421,6 +497,7 @@
 
       catEl.appendChild(catBadge);
 
+      // Monta o card
       card.appendChild(imgWrap);
       card.appendChild(nameEl);
       card.appendChild(codeEl);
@@ -429,13 +506,18 @@
       return card;
     }
 
+    /**
+     * Renderiza a lista de produtos na tela
+     */
     function renderList(list) {
       $productsContainer.innerHTML = '';
+      
       if (!list.length) {
         $noResults.classList.remove('hidden');
         $visibleProducts.textContent = '0';
         return;
       }
+      
       $noResults.classList.add('hidden');
 
       const fragment = document.createDocumentFragment();
@@ -445,20 +527,26 @@
       $visibleProducts.textContent = list.length;
     }
 
+    /**
+     * Filtra produtos por termo de busca e categoria
+     */
     function filterProducts() {
       const term = $search.value.toLowerCase().trim();
       const categoryFilter = currentCategory;
       let base = products;
 
+      // Filtra por categoria
       if (categoryFilter !== 'all') {
         base = base.filter(p => p.category === categoryFilter);
       }
 
+      // Se não tem termo de busca, mostra todos da categoria
       if (!term) {
         renderList(base);
         return;
       }
 
+      // Filtra por termo (nome, código ou categoria)
       const filtered = base.filter(product => {
         const name = product.name.toLowerCase();
         const code = product.code.toLowerCase();
@@ -470,30 +558,41 @@
       renderList(filtered);
     }
 
-    // Handlers UI
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
+
+    // Busca ao digitar
     $search.addEventListener('input', () => {
       filterProducts();
       $clearBtn.classList.toggle('hidden', !$search.value);
     });
 
+    // Busca ao pressionar Enter
     $search.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') filterProducts();
     });
 
+    // Filtro por categoria (dropdown)
     $categorySelect.addEventListener('change', (e) => {
       currentCategory = e.target.value;
+      
+      // Atualiza visual dos chips
       document.querySelectorAll('.chip').forEach(c => {
         c.classList.remove('bg-azul-escuro', 'text-white', 'border-none');
         c.classList.add('bg-white', 'text-azul-escuro', 'border', 'border-azul-escuro');
+        
         if (c.dataset.cat === currentCategory) {
           c.classList.remove('bg-white','text-azul-escuro');
           c.classList.add('bg-azul-escuro','text-white');
           c.classList.remove('border');
         }
       });
+      
       filterProducts();
     });
 
+    // Filtro por categoria (chips)
     $chips.forEach(chip => {
       chip.addEventListener('click', () => {
         const cat = chip.dataset.cat;
@@ -503,6 +602,7 @@
       });
     });
 
+    // Limpar busca
     $clearBtn.addEventListener('click', () => {
       $search.value = '';
       $clearBtn.classList.add('hidden');
@@ -510,44 +610,46 @@
       $search.focus();
     });
 
+    // Recarregar (reset)
     $refreshBtn.addEventListener('click', () => {
       $search.value = '';
       $categorySelect.value = 'all';
       currentCategory = 'all';
       $clearBtn.classList.add('hidden');
+      
       document.querySelectorAll('.chip').forEach(c => {
         c.classList.remove('bg-azul-escuro','text-white');
         c.classList.add('bg-white','text-azul-escuro','border','border-azul-escuro');
       });
+      
       document.querySelector('.chip[data-cat="all"]').classList.add('bg-azul-escuro','text-white');
       filterProducts();
     });
 
-    // ======================================================
-    // FUNCIONALIDADE: ALT+TAB FOCA NA BARRA DE PESQUISA
-    // ======================================================
+    // Foco automático na busca quando a janela recebe foco (Alt+Tab)
     window.addEventListener('focus', () => {
-      setTimeout(() => {
-        $search.focus();
-      }, 100);
+      setTimeout(() => $search.focus(), 100);
     });
 
-    // Também foca ao pressionar Alt+Tab (detecta quando a janela recebe foco)
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
-        setTimeout(() => {
-          $search.focus();
-        }, 100);
+        setTimeout(() => $search.focus(), 100);
       }
     });
 
-    // inicializa
+    // ==========================================
+    // INICIALIZAÇÃO
+    // ==========================================
+    
     (function init() {
+      // Marca chip "Todos" como ativo
       document.querySelector('.chip[data-cat="all"]').classList.remove('bg-white','text-azul-escuro');
       document.querySelector('.chip[data-cat="all"]').classList.add('bg-azul-escuro','text-white');
 
+      // Renderiza todos os produtos
       renderList(products);
 
+      // Foco na busca
       $search.focus();
     })();
   </script>
